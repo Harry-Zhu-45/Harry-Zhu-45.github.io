@@ -318,10 +318,7 @@ configure，启用 MPI (ENABLE_MPI=on)</p>
 <p>如果不使用 GPU，只使用 CPU 运行 HOOMD，可以使用以下命令编译
 (ENABLE_GPU=off)</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake -B build/hoomd -S hoomd-blue -DCMAKE_INSTALL_PREFIX=$(python3 -c <span class="string">"import site; print(site.getsitepackages()[0])"</span>) -DENABLE_MPI=on -DENABLE_GPU=off</span><br></pre></td></tr></table></figure>
-<p>如果需要使用 GPU 运行 HOOMD：假设使用的是 Nvidia 的显卡，且没有安装
-<code>CUDA</code>，最简单的安装方法是</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda install -c nvidia cuda</span><br></pre></td></tr></table></figure>
-<p>然后可以使用以下命令编译 (ENABLE_GPU=on)</p>
+<p>如果需要使用 GPU 运行 HOOMD，可以使用以下命令编译 (ENABLE_GPU=on)</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmake -B build/hoomd -S hoomd-blue -DCMAKE_INSTALL_PREFIX=$(python3 -c <span class="string">"import site; print(site.getsitepackages()[0])"</span>) -DENABLE_MPI=on -DENABLE_GPU=on</span><br></pre></td></tr></table></figure>
 <p>使用 <code>cmake</code> 进行 build (<code>-j8</code> 是传递给
 <code>make</code> 参数，请根据机器的情况填写)</p>
