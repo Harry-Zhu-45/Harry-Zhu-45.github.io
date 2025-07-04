@@ -307,16 +307,18 @@ HOOMD，需要 build frome sourse</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda activate hoomd5</span><br></pre></td></tr></table></figure>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">micromamba activate hoomd5</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p><code>openmpi</code> 可能存在一些问题，建议使用
-<code>mpich</code>。</p>
-<p>可以尝试在 conda 环境中删除 <code>openmpi</code>，然后安装
-<code>mpich</code></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda remove openmpi</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda install -c conda-forge mpich</span><br></pre></td></tr></table></figure>
+<p>在我的使用过程中，即使已经安装了 <code>mpich</code>，在 cmake
+配置的阶段总是找不到 <code>mpicc</code>、<code>mpicxx</code>
+之类的路径。</p>
+<p><code>mpich</code> 可能存在一些问题，建议使用
+<code>openmpi</code>，可以尝试在 conda 环境中删除
+<code>mpich</code>，然后安装 <code>openmpi</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda remove mpich</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda install -c conda-forge openmpi</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>下载前置的包</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda install -c conda-forge cmake cereal eigen git python numpy pybind11 mpich ninja -y</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">micromamba install -c conda-forge cmake cereal eigen git python numpy pybind11 mpich ninja -y</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">conda install -c conda-forge cmake cereal eigen git python numpy pybind11 openmpi ninja -y</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">micromamba install -c conda-forge cmake cereal eigen git python numpy pybind11 openmpi ninja -y</span><br></pre></td></tr></table></figure>
 <h3 id="安装-hoomd-本体">安装 HOOMD 本体</h3>
 <p>下载 HOOMD 源码，有两种方法，一种方法是使用 <code>git</code>
 (--recursive 是必要的)</p>
@@ -334,7 +336,7 @@ HOOMD，需要 build frome sourse</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mv</span> hoomd-5.3.0 hoomd-blue</span><br></pre></td></tr></table></figure>
 <p>通过以上两种中的一种方式下载好源码之后，使用 <code>cmake</code> 进行
 configure，启用 MPI (ENABLE_MPI=on)</p>
-<p>确保已经进入 repo 文件夹</p>
+<p>确保已经进入 <code>hoomd-blue</code> 文件夹</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> hoomd-blue</span><br></pre></td></tr></table></figure>
 <p>如果不使用 GPU，只使用 CPU 运行 HOOMD，可以使用以下命令编译
 (ENABLE_GPU=off)</p>
@@ -361,6 +363,7 @@ configure，启用 MPI (ENABLE_MPI=on)</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">micromamba install -c conda-forge freud fresnel gsd matplotlib jupyter signac signac-flow pandas coxeter rowan</span><br></pre></td></tr></table></figure>
 <h2 id="change-log-v5.3.0">CHANGE LOG (v5.3.0)</h2>
 <ul>
+<li>2025/07/04 mpi 部分换用 openmpi; by Harry</li>
 <li>2025/04/23 改进了部分描述; by Harry</li>
 <li>2025/03/15 加入了 micromamba 的描述; by Harry</li>
 <li>2025/01/10 改进了部分描述; by Harry</li>
