@@ -1,29 +1,97 @@
 ---
-import { getCollection, render } from 'astro:content';
-import BlogPost from '../../../../layouts/BlogPost.astro';
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import path from 'node:path';
+import { Icon } from 'astro-icon/components';
+import { licenseConfig, profileConfig, siteConfig } from '@/config';
+import License from '@components/misc/License.astro';
+import Markdown from '@components/misc/Markdown.astro';
+import PostMetadata from '@components/PostMeta.astro';
+import ImageWrapper from '@components/misc/ImageWrapper.astro';
+import MainGridLayout from '@layouts/MainGridLayout.astro';
+import { getSortedPosts } from '@utils/content-utils';
+import { dateParts } from '@utils/date';
+import { formatDateToYYYYMMDD } from '@utils/date-utils';
+import { getDir } from '@utils/url-utils';
 
-export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => {
-		const d = post.data.pubDate;
+export const getStaticPaths = (async () => {
+	const posts = await getSortedPosts();
+	return posts.map((entry) => {
+		const { year, month, day } = dateParts(entry.data.pubDate);
 		return {
-			params: {
-				year: String(d.getUTCFullYear()),
-				month: String(d.getUTCMonth() + 1).padStart(2, '0'),
-				day: String(d.getUTCDate()).padStart(2, '0'),
-				// post.id = 相对路径去扩展名（含 translate/ 等子目录），
-				// 与 Hexo :title 语义一致 → URL 逐字节对齐
-				slug: post.id,
-			},
-			props: { post },
+			params: { year, month, day, slug: entry.id },
+			props: { entry },
 		};
 	});
-}
+}) satisfies GetStaticPaths;
 
-const { post } = Astro.props;
-const { Content } = await render(post);
+const { entry } = Astro.props;
+const { Content, headings, remarkPluginFrontmatter } = await render(entry);
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: entry.data.title,
+	description: entry.data.description || entry.data.title,
+	keywords: entry.data.tags,
+	author: { '@type': 'Person', name: profileConfig.name, url: Astro.site },
+	datePublished: formatDateToYYYYMMDD(entry.data.pubDate),
+	inLanguage: siteConfig.lang.replace('_', '-'),
+};
 ---
 
-<BlogPost {...post.data}>
-	<Content />
-</BlogPost>
+<MainGridLayout title={entry.data.title} description={entry.data.description} setOGTypeArticle={true} headings={headings}>
+	<script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+	<article class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
+		<div id="post-container" class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+			<div class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation">
+				<div class="flex flex-row items-center">
+					<div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+						<Icon name="material-symbols:notes-rounded"></Icon>
+					</div>
+					<div class="text-sm">{remarkPluginFrontmatter.words} 字</div>
+				</div>
+				<div class="flex flex-row items-center">
+					<div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
+						<Icon name="material-symbols:schedule-outline-rounded"></Icon>
+					</div>
+					<div class="text-sm">约 {remarkPluginFrontmatter.minutes} 分钟阅读</div>
+				</div>
+			</div>
+
+			<div class="relative onload-animation">
+				<h1 data-pagefind-body data-pagefind-weight="10" data-pagefind-meta="title"
+					class="transition w-full block font-bold mb-3 text-3xl md:text-[2.25rem]/[2.75rem] text-90 md:before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)] before:absolute before:top-[0.75rem] before:left-[-1.125rem]">
+					{entry.data.title}
+				</h1>
+			</div>
+
+			<div class="onload-animation">
+				<PostMetadata class="mb-5" published={entry.data.pubDate} updated={entry.data.updatedDate} tags={entry.data.tags} categories={entry.data.categories}></PostMetadata>
+				{!entry.data.image && <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5"></div>}
+			</div>
+
+			{entry.data.image && <ImageWrapper id="post-cover" src={entry.data.image} basePath={path.join('content/blog/', getDir(entry.id))} class="mb-8 rounded-xl banner-container onload-animation" />}
+
+			<Markdown class="mb-6 markdown-content onload-animation">
+				<Content />
+			</Markdown>
+
+			{licenseConfig.enable && <License title={entry.data.title} slug={entry.id} pubDate={entry.data.pubDate} class="mb-6 rounded-xl license-container onload-animation" />}
+		</div>
+	</article>
+
+	<div class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full">
+		<a href={entry.data.nextUrl || '#'} class:list={["w-full font-bold overflow-hidden active:scale-95", {"pointer-events-none": !entry.data.nextUrl}]}>
+			{entry.data.nextUrl && <div class="btn-card rounded-2xl w-full h-[3.75rem] max-w-full px-4 flex items-center !justify-start gap-4">
+				<Icon name="material-symbols:chevron-left-rounded" class="text-[2rem] text-[var(--primary)]" />
+				<div class="overflow-hidden whitespace-nowrap text-ellipsis max-w-[calc(100%_-_3rem)] text-black/75 dark:text-white/75">{entry.data.nextTitle}</div>
+			</div>}
+		</a>
+		<a href={entry.data.prevUrl || '#'} class:list={["w-full font-bold overflow-hidden active:scale-95", {"pointer-events-none": !entry.data.prevUrl}]}>
+			{entry.data.prevUrl && <div class="btn-card rounded-2xl w-full h-[3.75rem] max-w-full px-4 flex items-center !justify-end gap-4">
+				<div class="overflow-hidden whitespace-nowrap text-ellipsis max-w-[calc(100%_-_3rem)] text-black/75 dark:text-white/75">{entry.data.prevTitle}</div>
+				<Icon name="material-symbols:chevron-right-rounded" class="text-[2rem] text-[var(--primary)]" />
+			</div>}
+		</a>
+	</div>
+</MainGridLayout>

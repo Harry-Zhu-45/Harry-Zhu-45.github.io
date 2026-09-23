@@ -1,61 +1,31 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import Header from '../../components/Header.astro';
-import { dateParts } from '../../utils/date';
+import I18nKey from '@i18n/i18nKey';
+import { i18n } from '@i18n/translation';
+import MainGridLayout from '@layouts/MainGridLayout.astro';
+import Pagination from '@components/control/Pagination.astro';
+import PostPage from '@components/PostPage.astro';
+import { getSortedPosts } from '@utils/content-utils';
+import { listingPage } from '@utils/listing-page';
+import { dateParts } from '@utils/date';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
-
-// 按年 → 月两级分组
-const years = new Map();
+const posts = await getSortedPosts();
+const page = listingPage(posts, '/archives/');
+const monthsByYear = new Map<string, Set<string>>();
 for (const post of posts) {
 	const { year, month } = dateParts(post.data.pubDate);
-	if (!years.has(year)) years.set(year, new Map());
-	const months = years.get(year);
-	if (!months.has(month)) months.set(month, []);
-	months.get(month).push(post);
+	if (!monthsByYear.has(year)) monthsByYear.set(year, new Set());
+	monthsByYear.get(year)?.add(month);
 }
+const years = [...monthsByYear.entries()].map(([year, months]) => ({ year, months: [...months] }));
 ---
 
-<html lang="zh-CN">
-	<head>
-		<BaseHead title="归档 · HarryZ's Blog" />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>归档</h1>
-			{
-				[...years.entries()].map(([year, months]) => (
-					<section>
-						<h2>
-							<a href={`/archives/${year}/`}>{year}</a>
-						</h2>
-						{[...months.entries()].map(([month, monthPosts]) => (
-							<div class="month-group">
-								<h3>
-									<a href={`/archives/${year}/${month}/`}>
-										{year} 年 {month} 月
-									</a>
-								</h3>
-								<ul class="post-list">
-									{monthPosts.map((post) => (
-										<li>
-											<a href={`/${dateParts(post.data.pubDate).year}/${dateParts(post.data.pubDate).month}/${dateParts(post.data.pubDate).day}/${post.id}/`}>
-												<span class="post-title">{post.data.title}</span>
-											</a>
-										</li>
-									))}
-								</ul>
-							</div>
-						))}
-					</section>
-				))
-			}
-		</main>
-		<Footer />
-	</body>
-</html>
+<MainGridLayout title={i18n(I18nKey.archive)}>
+	<div class="card-base flex flex-col gap-3 p-4 mb-4" aria-label="按年月浏览文章">
+		{years.map(({ year, months }) => <div class="flex flex-wrap items-center gap-2">
+			<a class="btn-regular h-9 px-3 rounded-lg font-bold" href={`/archives/${year}/`}>{year}</a>
+			{months.map((month) => <a class="btn-plain h-9 px-3 rounded-lg" href={`/archives/${year}/${month}/`}>{month} 月</a>)}
+		</div>)}
+	</div>
+	<PostPage page={page} />
+	{page.lastPage > 1 && <Pagination page={page} basePath="/archives/page/" firstPageUrl="/archives/" class="mx-auto onload-animation" />}
+</MainGridLayout>

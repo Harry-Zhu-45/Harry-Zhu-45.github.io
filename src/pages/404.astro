@@ -1,19 +1,12 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
+import MainGridLayout from '@layouts/MainGridLayout.astro';
+import ButtonTag from '@components/control/ButtonTag.astro';
 ---
 
-<html lang="zh-CN">
-	<head>
-		<BaseHead title="404 · HarryZ's Blog" />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>404</h1>
-			<p>页面不存在。<a href="/">回首页</a></p>
-		</main>
-		<Footer />
-	</body>
-</html>
+<MainGridLayout title="页面不存在">
+	<div class="card-base flex flex-col items-center gap-3 p-10 text-center">
+		<div class="text-7xl font-bold text-[var(--primary)]">404</div>
+		<p class="text-50">这个地址没有对应的页面。</p>
+		<ButtonTag href="/" label="返回首页">返回首页</ButtonTag>
+	</div>
+</MainGridLayout>

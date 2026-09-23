@@ -1,36 +1,138 @@
 // @ts-check
 
-import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import svelte from '@astrojs/svelte';
+import tailwind from '@astrojs/tailwind';
+import { pluginCollapsibleSections } from '@expressive-code/plugin-collapsible-sections';
+import { pluginLineNumbers } from '@expressive-code/plugin-line-numbers';
+import swup from '@swup/astro';
 import expressiveCode from 'astro-expressive-code';
+import icon from 'astro-icon';
 import { defineConfig } from 'astro/config';
-import remarkMath from 'remark-math';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypeComponents from 'rehype-components';
 import rehypeKatex from 'rehype-katex';
+import rehypeSlug from 'rehype-slug';
+import remarkDirective from 'remark-directive';
+import remarkGithubAdmonitionsToDirectives from 'remark-github-admonitions-to-directives';
+import remarkMath from 'remark-math';
+import remarkSectionize from 'remark-sectionize';
+import { expressiveCodeConfig } from './src/config.ts';
+import { pluginLanguageBadge } from './src/plugins/expressive-code/language-badge.ts';
+import { pluginCustomCopyButton } from './src/plugins/expressive-code/custom-copy-button.js';
+import { AdmonitionComponent } from './src/plugins/rehype-component-admonition.mjs';
+import { GithubCardComponent } from './src/plugins/rehype-component-github-card.mjs';
+import { parseDirectiveNode } from './src/plugins/remark-directive-rehype.js';
+import { remarkExcerpt } from './src/plugins/remark-excerpt.js';
+import { remarkReadingTime } from './src/plugins/remark-reading-time.mjs';
 
-// https://astro.build/config
 export default defineConfig({
 	site: 'https://Harry-Zhu-45.github.io',
+	base: '/',
 	trailingSlash: 'always',
-	// 必须 'directory'：产出 /foo/index.html 而不是 /foo.html，
-	// 与旧 Hexo 站的 /YYYY/MM/DD/<slug>/ URL 形态保持一致
 	build: { format: 'directory' },
 	integrations: [
+		tailwind({ nesting: true }),
+		swup({
+			theme: false,
+			animationClass: 'transition-swup-',
+			containers: ['main', '#toc'],
+			smoothScrolling: true,
+			cache: true,
+			preload: true,
+			accessibility: true,
+			updateHead: true,
+			updateBodyClass: false,
+			globalInstance: true,
+		}),
+		icon({
+			include: {
+				'fa6-brands': ['*'],
+				'fa6-regular': ['*'],
+				'fa6-solid': ['*'],
+				'material-symbols': ['*'],
+			},
+		}),
 		expressiveCode({
 			themes: ['github-light', 'github-dark'],
-			// 关掉 prefers-color-scheme 媒体查询：本站在 <head> 内联脚本里
-			// 把最终主题写进 <html data-theme>，由它统一裁决
 			useDarkModeMediaQuery: false,
-			// 默认按主题名匹配（[data-theme='github-dark']），
-			// 改为按明暗类型匹配，对齐本站的 data-theme="dark|light"
-			themeCssSelector: (theme) => `[data-theme='${theme.type}']`,
+			themeCssSelector: (theme) =>
+				theme.type === 'dark' ? ':root.dark' : ':root:not(.dark)',
+			plugins: [
+				pluginCollapsibleSections(),
+				pluginLineNumbers(),
+				pluginLanguageBadge(),
+				pluginCustomCopyButton(),
+			],
+			defaultProps: {
+				wrap: true,
+				overridesByLang: { shellsession: { showLineNumbers: false } },
+			},
+			styleOverrides: {
+				codeBackground: 'var(--codeblock-bg)',
+				borderRadius: '0.75rem',
+				borderColor: 'transparent',
+				codeFontSize: '0.875rem',
+				codeFontFamily: "'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+				codeLineHeight: '1.5rem',
+				frames: {
+					editorBackground: 'var(--codeblock-bg)',
+					terminalBackground: 'var(--codeblock-bg)',
+					terminalTitlebarBackground: 'var(--codeblock-topbar-bg)',
+					editorTabBarBackground: 'var(--codeblock-topbar-bg)',
+					editorActiveTabBackground: 'none',
+					editorActiveTabIndicatorBottomColor: 'var(--primary)',
+					editorActiveTabIndicatorTopColor: 'none',
+					editorTabBarBorderBottomColor: 'var(--codeblock-topbar-bg)',
+					terminalTitlebarBorderBottomColor: 'none',
+				},
+				textMarkers: { delHue: 0, insHue: 180, markHue: 250 },
+			},
+			frames: { showCopyToClipboardButton: false },
 		}),
-		mdx(),
+		svelte(),
 		sitemap(),
 	],
 	markdown: {
-		remarkPlugins: [remarkMath],
-		rehypePlugins: [rehypeKatex],
-		// 站内有一个 ```mathematica 代码块；Shiki 无此语言名，别名到 wolfram
+		remarkPlugins: [
+			remarkMath,
+			remarkReadingTime,
+			remarkExcerpt,
+			remarkGithubAdmonitionsToDirectives,
+			remarkDirective,
+			remarkSectionize,
+			parseDirectiveNode,
+		],
+		rehypePlugins: [
+			rehypeKatex,
+			rehypeSlug,
+			[
+				rehypeComponents,
+				{
+					components: {
+						github: GithubCardComponent,
+						note: (node, file) => AdmonitionComponent(node, file, 'note'),
+						tip: (node, file) => AdmonitionComponent(node, file, 'tip'),
+						important: (node, file) => AdmonitionComponent(node, file, 'important'),
+						caution: (node, file) => AdmonitionComponent(node, file, 'caution'),
+						warning: (node, file) => AdmonitionComponent(node, file, 'warning'),
+					},
+				},
+			],
+			[
+				rehypeAutolinkHeadings,
+				{
+					behavior: 'append',
+					properties: { className: ['anchor'] },
+					content: {
+						type: 'element',
+						tagName: 'span',
+						properties: { className: ['anchor-icon'], 'data-pagefind-ignore': true },
+						children: [{ type: 'text', value: '#' }],
+					},
+				},
+			],
+		],
 		shikiConfig: { langAlias: { mathematica: 'wolfram' } },
 	},
 });

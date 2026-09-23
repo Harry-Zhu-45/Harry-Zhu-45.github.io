@@ -1,16 +1,20 @@
-import { getCollection } from 'astro:content';
 import rss from '@astrojs/rss';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { siteConfig } from '@/config';
+import { getSortedPosts } from '@utils/content-utils';
+import { getPostUrlBySlug } from '@utils/url-utils';
 
 export async function GET(context) {
-	const posts = await getCollection('blog');
+	const posts = await getSortedPosts();
 	return rss({
-		title: SITE_TITLE,
-		description: SITE_DESCRIPTION,
-		site: context.site,
+		title: siteConfig.title,
+		description: siteConfig.subtitle,
+		site: context.site ?? 'https://Harry-Zhu-45.github.io',
 		items: posts.map((post) => ({
-			...post.data,
-			link: `/${String(post.data.pubDate.getUTCFullYear())}/${String(post.data.pubDate.getUTCMonth() + 1).padStart(2, '0')}/${String(post.data.pubDate.getUTCDate()).padStart(2, '0')}/${post.id}/`,
+			title: post.data.title,
+			pubDate: post.data.pubDate,
+			description: post.data.description,
+			link: getPostUrlBySlug(post.id, post.data.pubDate),
 		})),
+		customData: `<language>${siteConfig.lang}</language>`,
 	});
 }

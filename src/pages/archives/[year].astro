@@ -1,65 +1,35 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { dateParts } from '../../utils/date';
+import type { CollectionEntry } from 'astro:content';
+import MainGridLayout from '@layouts/MainGridLayout.astro';
+import PostPage from '@components/PostPage.astro';
+import { getSortedPosts } from '@utils/content-utils';
+import { dateParts } from '@utils/date';
 
 export async function getStaticPaths() {
-	const posts = (await getCollection('blog')).sort(
-		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-	);
-
-	// 按年分组
-	const years = new Map();
+	const posts = await getSortedPosts();
+	const years = new Map<string, CollectionEntry<'blog'>[]>();
 	for (const post of posts) {
 		const { year } = dateParts(post.data.pubDate);
 		if (!years.has(year)) years.set(year, []);
-		years.get(year).push(post);
+		years.get(year)?.push(post);
 	}
 	return [...years.entries()].map(([year, yearPosts]) => ({
 		params: { year },
-		props: { yearPosts, allPosts: posts },
+		props: {
+			yearPosts,
+			years: [...years.keys()],
+			months: [...new Set(yearPosts.map((post) => dateParts(post.data.pubDate).month))],
+		},
 	}));
 }
 
-const { yearPosts, allPosts } = Astro.props;
-const years = [...new Set(allPosts.map((p) => dateParts(p.data.pubDate).year))];
+const { yearPosts, years, months } = Astro.props;
 ---
 
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={`归档 ${Astro.params.year} · HarryZ's Blog`} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>归档</h1>
-			<nav class="year-nav">
-				{
-					years.map((y) => (
-						<a href={`/archives/${y}/`} class:list={[{ current: y === Astro.params.year }]}>
-							{y}
-						</a>
-					))
-				}
-			</nav>
-			<ul class="post-list">
-				{
-					yearPosts.map((post) => (
-						<li>
-							<a href={`/${dateParts(post.data.pubDate).year}/${dateParts(post.data.pubDate).month}/${dateParts(post.data.pubDate).day}/${post.id}/`}>
-								<div class="post-title">{post.data.title}</div>
-								<div class="post-date">
-									<FormattedDate date={post.data.pubDate} />
-								</div>
-							</a>
-						</li>
-					))
-				}
-			</ul>
-		</main>
-		<Footer />
-	</body>
-</html>
+<MainGridLayout title={`归档 · ${Astro.params.year}`}>
+	<div class="card-base flex flex-col gap-3 p-4 mb-4">
+		<div class="flex flex-wrap gap-2">{years.map((year) => <a class="btn-regular h-9 px-3 rounded-lg" href={`/archives/${year}/`}>{year}</a>)}</div>
+		<div class="flex flex-wrap gap-2">{months.map((month) => <a class="btn-plain h-9 px-3 rounded-lg" href={`/archives/${Astro.params.year}/${month}/`}>{month} 月</a>)}</div>
+	</div>
+	<PostPage page={{ data: yearPosts }} />
+</MainGridLayout>

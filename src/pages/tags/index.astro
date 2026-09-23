@@ -1,39 +1,16 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import Header from '../../components/Header.astro';
+import I18nKey from '@i18n/i18nKey';
+import { i18n } from '@i18n/translation';
+import MainGridLayout from '@layouts/MainGridLayout.astro';
+import ButtonTag from '@components/control/ButtonTag.astro';
+import { getTagList } from '@utils/content-utils';
+import { getTagUrl } from '@utils/url-utils';
 
-const posts = await getCollection('blog');
-
-// tag → 文章数
-const tagCounts = new Map();
-for (const post of posts) {
-	for (const tag of post.data.tags) {
-		tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
-	}
-}
-const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]);
+const tags = await getTagList();
 ---
 
-<html lang="zh-CN">
-	<head>
-		<BaseHead title="标签 · HarryZ's Blog" />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>标签</h1>
-			<div class="tag-cloud">
-				{
-					tags.map(([tag, count]) => (
-						<a class="tag" href={`/tags/${tag}/`}>
-							{tag} <span class="count">{count}</span>
-						</a>
-					))
-				}
-			</div>
-		</main>
-		<Footer />
-	</body>
-</html>
+<MainGridLayout title={i18n(I18nKey.tags)}>
+	<div class="card-base flex flex-wrap gap-2 p-6">
+		{tags.map((tag) => <ButtonTag href={getTagUrl(tag.name)} label={`查看“${tag.name}”标签下的文章`}>{tag.name}<span class="ml-2 opacity-60">{tag.count}</span></ButtonTag>)}
+	</div>
+</MainGridLayout>

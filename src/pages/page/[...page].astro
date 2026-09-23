@@ -1,50 +1,20 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { dateParts } from '../../utils/date';
+import type { GetStaticPaths } from 'astro';
+import MainGridLayout from '@layouts/MainGridLayout.astro';
+import Pagination from '@components/control/Pagination.astro';
+import PostPage from '@components/PostPage.astro';
+import { PAGE_SIZE } from '@constants/constants';
+import { getSortedPosts } from '@utils/content-utils';
 
-export async function getStaticPaths({ paginate }) {
-	const posts = (await getCollection('blog')).sort(
-		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-	);
-	// Hexo: per_page 10 → 第 2 页起位于 /page/2/（第 1 页是首页 /，由 index.astro 承担）
-	// 故过滤掉 params.page 为空的第 1 页
-	return paginate(posts, { pageSize: 10 }).filter((p) => p.params.page !== undefined);
-}
+export const getStaticPaths = (async ({ paginate }) => {
+	const posts = await getSortedPosts();
+	return paginate(posts, { pageSize: PAGE_SIZE }).filter(({ params }) => params.page !== undefined);
+}) satisfies GetStaticPaths;
 
 const { page } = Astro.props;
 ---
 
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={`第 ${page.currentPage} 页 · HarryZ's Blog`} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<ul class="post-list">
-				{
-					page.data.map((post) => (
-						<li>
-							<a href={`/${dateParts(post.data.pubDate).year}/${dateParts(post.data.pubDate).month}/${dateParts(post.data.pubDate).day}/${post.id}/`}>
-								<div class="post-title">{post.data.title}</div>
-								<div class="post-date">
-									<FormattedDate date={post.data.pubDate} />
-								</div>
-							</a>
-						</li>
-					))
-				}
-			</ul>
-			<nav class="pager">
-				{page.url.prev && <a href={page.url.prev}>« 上一页</a>}
-				<span>{page.currentPage} / {page.lastPage}</span>
-				{page.url.next && <a href={page.url.next}>下一页 »</a>}
-			</nav>
-		</main>
-		<Footer />
-	</body>
-</html>
+<MainGridLayout title={`第 ${page.currentPage} 页`}>
+	<PostPage page={page} />
+	<Pagination page={page} basePath="/page/" firstPageUrl="/" class="mx-auto onload-animation" />
+</MainGridLayout>

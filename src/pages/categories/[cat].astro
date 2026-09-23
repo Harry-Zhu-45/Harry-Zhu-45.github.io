@@ -1,54 +1,23 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { dateParts } from '../../utils/date';
+import MainGridLayout from '@layouts/MainGridLayout.astro';
+import PostPage from '@components/PostPage.astro';
+import { getSortedPosts } from '@utils/content-utils';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	const cats = new Map();
+	const posts = await getSortedPosts();
+	const categories = new Map();
 	for (const post of posts) {
-		for (const cat of post.data.categories) {
-			if (!cats.has(cat)) cats.set(cat, []);
-			cats.get(cat).push(post);
+		for (const category of post.data.categories) {
+			if (!categories.has(category)) categories.set(category, []);
+			categories.get(category).push(post);
 		}
 	}
-	return [...cats.entries()].map(([cat, catPosts]) => ({
-		params: { cat },
-		props: {
-			catPosts: catPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
-		},
-	}));
+	return [...categories.entries()].map(([cat, catPosts]) => ({ params: { cat }, props: { catPosts } }));
 }
 
 const { catPosts } = Astro.props;
 ---
 
-<html lang="zh-CN">
-	<head>
-		<BaseHead title={`分类：${Astro.params.cat} · HarryZ's Blog`} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>分类：{Astro.params.cat}</h1>
-			<ul class="post-list">
-				{
-					catPosts.map((post) => (
-						<li>
-							<a href={`/${dateParts(post.data.pubDate).year}/${dateParts(post.data.pubDate).month}/${dateParts(post.data.pubDate).day}/${post.id}/`}>
-								<div class="post-title">{post.data.title}</div>
-								<div class="post-date">
-									<FormattedDate date={post.data.pubDate} />
-								</div>
-							</a>
-						</li>
-					))
-				}
-			</ul>
-		</main>
-		<Footer />
-	</body>
-</html>
+<MainGridLayout title={`分类 · ${Astro.params.cat}`}>
+	<PostPage page={{ data: catPosts }} />
+</MainGridLayout>

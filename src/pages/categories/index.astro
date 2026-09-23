@@ -1,38 +1,15 @@
 ---
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import Header from '../../components/Header.astro';
+import I18nKey from '@i18n/i18nKey';
+import { i18n } from '@i18n/translation';
+import MainGridLayout from '@layouts/MainGridLayout.astro';
+import ButtonLink from '@components/control/ButtonLink.astro';
+import { getCategoryList } from '@utils/content-utils';
 
-const posts = await getCollection('blog');
-
-const catCounts = new Map();
-for (const post of posts) {
-	for (const cat of post.data.categories) {
-		catCounts.set(cat, (catCounts.get(cat) ?? 0) + 1);
-	}
-}
-const cats = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
+const categories = await getCategoryList();
 ---
 
-<html lang="zh-CN">
-	<head>
-		<BaseHead title="分类 · HarryZ's Blog" />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>分类</h1>
-			<div class="tag-cloud">
-				{
-					cats.map(([cat, count]) => (
-						<a class="tag" href={`/categories/${cat}/`}>
-							{cat} <span class="count">{count}</span>
-						</a>
-					))
-				}
-			</div>
-		</main>
-		<Footer />
-	</body>
-</html>
+<MainGridLayout title={i18n(I18nKey.categories)}>
+	<div class="card-base flex flex-col gap-1 p-4">
+		{categories.map((category) => <ButtonLink url={category.url} badge={String(category.count)} label={`查看“${category.name}”分类下的文章`}>{category.name}</ButtonLink>)}
+	</div>
+</MainGridLayout>

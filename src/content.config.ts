@@ -16,12 +16,20 @@ const blog = defineCollection({
 		title: z.string(),
 		// 显式 slug = Hexo 的 :title（相对路径去扩展名），glob loader 会原样采用
 		slug: z.string(),
-		description: z.string().optional(),
+		description: z.string().optional().default(''),
+		image: z.string().optional().default(''),
 		pubDate: shDate,
 		updatedDate: shDate.optional(),
+		draft: z.boolean().optional().default(false),
+		lang: z.string().optional().default(''),
 		// Hexo 里 categories 是单个字符串、tags 是字符串或列表，迁移脚本已统一为数组
 		categories: z.array(z.string()).default([]),
 		tags: z.array(z.string()).default([]),
+		// Navigation fields populated at build time by the Fuwari post adapter.
+		prevTitle: z.string().default(''),
+		prevUrl: z.string().default(''),
+		nextTitle: z.string().default(''),
+		nextUrl: z.string().default(''),
 	}),
 });
 
