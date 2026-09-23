@@ -1,0 +1,49 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+
+// 数据来自旧站 source/_data/link.yml，直接内联（两条友链，无需 build 时解析 YAML）
+const links = [
+	{
+		name: 'Hexo',
+		link: 'https://hexo.io/zh-cn/',
+		avatar: '/img/hexo.svg',
+		descr: '快速、简洁且高效的博客框架',
+	},
+	{
+		name: 'Butterfly',
+		link: 'https://github.com/jerryc127/hexo-theme-butterfly',
+		avatar: '/img/github.svg',
+		descr: '一个好用的 Hexo 主题',
+	},
+];
+---
+
+<html lang="zh-CN">
+	<head>
+		<BaseHead title="友情链接 · HarryZ's Blog" />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>友情链接</h1>
+			<ul class="link-list">
+				{
+					links.map((l) => (
+						<li>
+							<a href={l.link} target="_blank" rel="noopener">
+								<img src={l.avatar} alt="" width="48" height="48" />
+								<div>
+									<div class="link-name">{l.name}</div>
+									<div class="link-descr">{l.descr}</div>
+								</div>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</main>
+		<Footer />
+	</body>
+</html>

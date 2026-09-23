@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://Harry-Zhu-45.github.io/sitemap-index.xml

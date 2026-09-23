@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { dateParts } from '../../utils/date';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+// 按年 → 月两级分组
+const years = new Map();
+for (const post of posts) {
+	const { year, month } = dateParts(post.data.pubDate);
+	if (!years.has(year)) years.set(year, new Map());
+	const months = years.get(year);
+	if (!months.has(month)) months.set(month, []);
+	months.get(month).push(post);
+}
+---
+
+<html lang="zh-CN">
+	<head>
+		<BaseHead title="归档 · HarryZ's Blog" />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>归档</h1>
+			{
+				[...years.entries()].map(([year, months]) => (
+					<section>
+						<h2>
+							<a href={`/archives/${year}/`}>{year}</a>
+						</h2>
+						{[...months.entries()].map(([month, monthPosts]) => (
+							<div class="month-group">
+								<h3>
+									<a href={`/archives/${year}/${month}/`}>
+										{year} 年 {month} 月
+									</a>
+								</h3>
+								<ul class="post-list">
+									{monthPosts.map((post) => (
+										<li>
+											<a href={`/${dateParts(post.data.pubDate).year}/${dateParts(post.data.pubDate).month}/${dateParts(post.data.pubDate).day}/${post.id}/`}>
+												<span class="post-title">{post.data.title}</span>
+											</a>
+										</li>
+									))}
+								</ul>
+							</div>
+						))}
+					</section>
+				))
+			}
+		</main>
+		<Footer />
+	</body>
+</html>

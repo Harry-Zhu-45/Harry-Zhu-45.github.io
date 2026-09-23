@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+
+const posts = await getCollection('blog');
+
+const catCounts = new Map();
+for (const post of posts) {
+	for (const cat of post.data.categories) {
+		catCounts.set(cat, (catCounts.get(cat) ?? 0) + 1);
+	}
+}
+const cats = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<html lang="zh-CN">
+	<head>
+		<BaseHead title="分类 · HarryZ's Blog" />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>分类</h1>
+			<div class="tag-cloud">
+				{
+					cats.map(([cat, count]) => (
+						<a class="tag" href={`/categories/${cat}/`}>
+							{cat} <span class="count">{count}</span>
+						</a>
+					))
+				}
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
