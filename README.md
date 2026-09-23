@@ -1,54 +1,43 @@
 # HarryZ's Blog
 
-个人博客，Astro 构建，部署在 GitHub Pages。
+个人博客，采用 [Fuwari](https://github.com/saicaca/fuwari) 主题，使用 Astro 构建并部署在 GitHub Pages。文章仍保存在 `src/content/blog/`，主题适配层保留本站 frontmatter 和旧链接结构。
 
-从 Hexo + Butterfly 迁移而来。旧站源码保留在 `../blog/`（只作备份，不再维护）。
-
-## 命令
+## 本地开发
 
 ```bash
 npm install
-npm run dev       # 本地开发 http://localhost:4321
-npm run build     # 产出到 dist/
-npm run preview   # 预览 dist/
+npx astro dev --background
+npm run build
+npm run preview
 ```
 
-## 内容
+开发服务器可用 `astro dev status`、`astro dev logs` 和 `astro dev stop` 管理。构建同时生成 Pagefind 搜索索引。
 
-文章放在 `src/content/blog/`，纯 Markdown。
+## 文章
 
-**子目录会进入 URL。** 例如 `src/content/blog/translate/维度：数学漫步.md`
-对应 `/YYYY/MM/DD/translate/维度：数学漫步/`。
-
-frontmatter：
+文章放在 `src/content/blog/`，使用 Markdown。子目录会保留在 URL 的 slug 里。
 
 ```yaml
 ---
-"title": "标题"
-"slug": "translate/维度：数学漫步"   # 必须显式写，= 相对 src/content/blog 的路径去扩展名
-"pubDate": "2024-02-17T21:58:00+08:00"
-"updatedDate": "2024-02-18T20:07:00+08:00"   # 可选
-"categories": ["数学"]
-"tags": ["拓扑", "维度"]
+title: 标题
+slug: translate/中文文章标题
+pubDate: "2024-02-17T21:58:00+08:00"
+updatedDate: "2024-02-18T20:07:00+08:00"
+categories: [数学]
+tags: [拓扑, 维度]
 ---
 ```
 
-⚠️ **`slug` 不能省。** Astro 的 glob loader 在没有 `slug` 时会对文件名做 slugify
-（小写化、丢弃标点），中文文件名会被改写成完全不同的 URL。写死 `slug` 才能保住 URL。
-
-⚠️ **日期必须带 `+08:00`。** 裸时间戳会跟随构建机时区解析，CI 上是 UTC，
-可能导致 URL 里的日期偏移一天。
+`slug` 必须显式填写，避免中文文件名被自动改写。日期必须带 `+08:00`，让本机和 CI 构建出相同的日期与文章链接。`src/config.ts` 保存站名、导航、头像、社交链接和主题颜色。临时草稿可用 `draft: true` 标记；以下划线开头的文件不会作为文章发布。
 
 ## URL 契约
 
-**这些 URL 与旧 Hexo 站逐字节一致，不可随意改动**（外链已积累多年）：
+以下旧地址必须保持不变，改动路由后需与 `urls-baseline.txt` 比较：
 
-```
+```text
 /                                  首页
 /YYYY/MM/DD/<slug>/                文章
-/archives/                         归档
-/archives/<年>/                    按年
-/archives/<年>/<月>/               按月
+/archives/  /archives/<年>/  /archives/<年>/<月>/
 /archives/page/2/                  归档分页
 /tags/  /tags/<tag>/               标签
 /categories/  /categories/<cat>/   分类
@@ -56,72 +45,32 @@ frontmatter：
 /page/2/                           首页分页
 ```
 
-共 56 条。改动路由后必须回归验证：
+构建后验证：
 
 ```bash
 npm run build
 find dist -name index.html | sed 's|^dist||; s|index.html$||' | sort > /tmp/new.txt
-comm -3 /tmp/urls-baseline.txt /tmp/new.txt   # 应为空
+comm -23 urls-baseline.txt /tmp/new.txt
 ```
 
-关键配置依赖（改错会毁掉全部 URL）：
+最后一条命令应无输出，表示原有 56 条 URL 均被保留。新增页面允许超出基线，例如 `/categories/未分类/` 用于列出没有设置分类的文章。`astro.config.mjs` 中的 `build.format: 'directory'` 和 `trailingSlash: 'always'` 是这些静态路径的一部分，不要删除。
 
-- `build.format: 'directory'` —— 必须。默认 `'file'` 会产出 `/foo.html`
-- `trailingSlash: 'always'`
-- frontmatter 的显式 `slug`
+## 内容渲染
 
-## 数学公式
+- 数学公式使用 `remark-math` 和 `rehype-katex`，写作 `$...$` 或 `$$...$$`。
+- Fuwari 提供代码高亮、明暗主题、文章目录、标签与分类导航和站内搜索。
+- 正文中的 HTML iframe 可用于嵌入 PDF；查看器放在 `public/pdfjs/`，PDF 文件放在 `public/pdf/`。
 
-`remark-math` + `rehype-katex`，语法 `$...$` / `$$...$$`。
-KaTeX 的 CSS 在 `src/components/BaseHead.astro` 里引入，字体随 Vite 打包进 `_astro/`。
+## 部署与主题维护
 
-## 代码块
+推送 `main` 分支后，GitHub Actions 会构建并部署到 GitHub Pages。仓库 Pages 来源应设置为 **GitHub Actions**。
 
-`astro-expressive-code`，明暗双主题。
-在 `astro.config.mjs` 里用 `themeCssSelector` 按**主题类型**（dark/light）匹配，
-对齐本站 `<html data-theme="dark|light">` —— 默认是按主题名匹配的，不改会失效。
+Fuwari 源码以 MIT 许可随仓库保留在 `LICENSE-Fuwari`。当前 Astro 版本固定为 `5.13.10`，与上游主题使用的 Astro 集成版本对齐。升级 Astro 或 Fuwari 时，应先在本地构建，再核对上述 URL 清单。
 
-## 明暗模式
-
-`BaseHead.astro` 里有一段 `is:inline` 脚本，在绘制前把最终主题写进
-`<html data-theme>`（读 localStorage，无记录则跟随系统），避免闪白。
-`global.css` 里 `:root[data-theme='dark']` 覆盖 CSS 变量。切换按钮在 `Header.astro`。
-
-## PDF 内嵌
-
-- `public/pdfjs/` —— pdf.js 官方预构建发行版（v6.3.289），已删 source map
-- `public/pdf/` —— PDF 文件本体
-- 正文里直接写裸 HTML（Astro 的 Markdown 默认放行）：
-
-```html
-<iframe src="/pdfjs/web/viewer.html?file=/pdf/foo.pdf"
-        style="width:100%;height:80vh;border:0"></iframe>
-```
-
-pdf.js 只跑在 iframe 内部，**不进宿主页面的 JS 预算** —— 没有嵌 PDF 的文章零开销。
-
-升级 pdf.js：从 https://github.com/mozilla/pdf.js/releases 下 `pdfjs-<ver>-dist.zip`，
-解压覆盖 `public/pdfjs/{build,web}/`，再删掉其中的 `*.map`。
-
-## 部署
-
-推 `main` 分支 → GitHub Actions 自动构建部署（`.github/workflows/deploy.yml`）。
-
-仓库 Settings → Pages → Source 必须是 **GitHub Actions**。
-
-⚠️ 走 Actions 部署时 GitHub 不跑 Jekyll，所以 `_astro/` 目录安全，**不需要 `.nojekyll`**。
-只有退回「Deploy from a branch」模式才需要。
-
-## 从旧站迁移内容
+## 从旧站迁移文章
 
 ```bash
 node scripts/migrate.mjs --force
 ```
 
-只读 `../blog/source/_posts/`，写入 `src/content/blog/`。
-做三件事：`date`→`pubDate`（补 `+08:00`）、`categories`/`tags` 归一为数组、写入显式 `slug`。
-正文逐字节原样拷贝。脚本会断言源目录恰好 19 篇。
-
-## Credit
-
-初始模板来自 Astro 官方 blog starter，其样式基于 [Bear Blog](https://github.com/HermanMartinus/bearblog/)。
+脚本从相邻的旧 Hexo 仓库 `../blog/source/_posts/` 读取 19 篇文章，写入 `src/content/blog/`。它会补上海时区、归一化分类和标签，并写入显式 slug；正文原样复制。
