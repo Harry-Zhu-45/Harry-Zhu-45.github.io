@@ -2,12 +2,17 @@
 import MainGridLayout from '@layouts/MainGridLayout.astro';
 import PostPage from '@components/PostPage.astro';
 import { getSortedPosts } from '@utils/content-utils';
+import I18nKey from '@i18n/i18nKey';
+import { i18n } from '@i18n/translation';
 
 export async function getStaticPaths() {
 	const posts = await getSortedPosts();
 	const categories = new Map();
 	for (const post of posts) {
-		for (const category of post.data.categories) {
+		const postCategories = post.data.categories.length > 0
+			? post.data.categories
+			: [i18n(I18nKey.uncategorized)];
+		for (const category of postCategories) {
 			if (!categories.has(category)) categories.set(category, []);
 			categories.get(category).push(post);
 		}

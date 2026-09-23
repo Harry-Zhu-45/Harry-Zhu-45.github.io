@@ -24,12 +24,8 @@ export function getTagUrl(tag: string): string {
 }
 
 export function getCategoryUrl(category: string | null): string {
-	if (
-		!category ||
-		category.trim() === "" ||
-		category.trim().toLowerCase() === i18n(I18nKey.uncategorized).toLowerCase()
-	) return url("/categories/");
-	return url(`/categories/${encodeURIComponent(category.trim())}/`);
+	const categoryName = category?.trim() || i18n(I18nKey.uncategorized);
+	return url(`/categories/${encodeURIComponent(categoryName)}/`);
 }
 
 export function getDir(path: string): string {
