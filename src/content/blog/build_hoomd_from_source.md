@@ -127,19 +127,19 @@ git pull --recurse-submodules
 还有一种方法是直接在 <https://hoomd-blue.readthedocs.io/en/latest/building.html#obtain-the-source> 或者在 <https://github.com/glotzerlab/hoomd-blue/releases> 下载最新的打包好的源码。
 
 ```bash
-wget https://github.com/glotzerlab/hoomd-blue/releases/download/v7.1.2/hoomd-7.1.2.tar.gz
+wget https://github.com/glotzerlab/hoomd-blue/releases/download/v7.2.0/hoomd-7.2.0.tar.gz
 ```
 
 解压缩
 
 ```bash
-tar -zxvf hoomd-7.1.2.tar.gz
+tar -zxvf hoomd-7.2.0.tar.gz
 ```
 
 重命名，和上一种方法保持一致
 
 ```bash
-mv hoomd-7.1.2 hoomd-blue
+mv hoomd-7.2.0 hoomd-blue
 ```
 
 通过以上两种中的一种方式下载好源码之后，进入 `hoomd-blue` 文件夹
@@ -258,7 +258,7 @@ micromamba install -c conda-forge freud fresnel gsd matplotlib jupyter signac si
 
 `row` 提供了[迁移指南](https://row.readthedocs.io/en/latest/signac-flow.html)。
 
-## CHANGE LOG (v7.1.2)
+## CHANGE LOG (v7.2.0)
 
 - 2026/07/21 改进 hoomd-rs 简介与 HOOMD-blue 安装说明; by Harry
 - 2026/07/09 调整了部分描述，删除了 miniconda 的部分; by Harry
