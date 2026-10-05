@@ -1,32 +1,7 @@
 ---
-import { Icon } from 'astro-icon/components';
 import MainGridLayout from '@layouts/MainGridLayout.astro';
-
-const links = [
-	{
-		name: 'Hexo',
-		link: 'https://hexo.io/zh-cn/',
-		avatar: '/img/hexo.svg',
-		description: '快速、简洁且高效的博客框架',
-	},
-	{
-		name: 'Butterfly',
-		link: 'https://github.com/jerryc127/hexo-theme-butterfly',
-		avatar: '/img/github.svg',
-		description: '一个好用的 Hexo 主题',
-	},
-];
 ---
 
 <MainGridLayout title="友情链接">
-	<div class="grid gap-4 sm:grid-cols-2">
-		{links.map((item) => <a class="card-base group flex items-center gap-4 p-5 transition hover:-translate-y-1" href={item.link} target="_blank" rel="noopener noreferrer">
-			<img class="h-12 w-12 rounded-xl object-contain" src={item.avatar} alt="" width="48" height="48" />
-			<div>
-				<div class="font-bold text-lg text-90 group-hover:text-[var(--primary)]">{item.name}</div>
-				<div class="text-50 text-sm">{item.description}</div>
-			</div>
-			<Icon name="fa6-solid:arrow-up-right-from-square" class="ml-auto opacity-40" />
-		</a>)}
-	</div>
+	<p class="card-base p-5 text-50">暂无友链。</p>
 </MainGridLayout>
