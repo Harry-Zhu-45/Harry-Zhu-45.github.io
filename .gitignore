@@ -3,6 +3,10 @@ dist/
 # generated types
 .astro/
 
+# sync-eat staging (cleaned on exit; guard against interrupted runs)
+public/.eat-staging-*/
+public/eat.eat-old/
+
 # local planning files
 .planning/
 

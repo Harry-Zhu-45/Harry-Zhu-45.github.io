@@ -10,6 +10,7 @@
 		"build": "astro build && pagefind --site dist",
 		"preview": "astro preview",
 		"check": "astro check",
+		"sync:eat": "node scripts/sync-eat.mjs",
 		"astro": "astro"
 	},
 	"dependencies": {
