@@ -1,0 +1,98 @@
+/*
+ * PWA 版专用的少量样式。桌面版不需要这些，所以不塞进 main.css：
+ * main.css 是两边共用的，桌面版加载 pwa.css 没有意义。
+ *
+ * 这里只放三类东西：
+ *   1. 装到主屏之后才出现的差异（安全区、standalone 下的高度）；
+ *   2. 更新提示条（.pwa-update-banner）；
+ *   3. 离线状态标记（html.pwa-offline）。
+ * 配色沿用 main.css 的调色板，不引入新颜色。
+ */
+
+/* 装到主屏后，页面会顶到状态栏和home指示条下面。env() 在不支持的环境里
+   会被忽略，所以桌面版和普通标签页不受影响。 */
+body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* standalone 模式下取不到浏览器地址栏的高度，100vh 会把内容顶出屏幕底部。
+   用 dvh（动态视口高度）让 header 跟着实际可视高度走；
+   不支持的浏览器忽略这一行，继续用 main.css 里的 vh。 */
+@media (display-mode: standalone) {
+    header {
+        height: 40dvh;
+    }
+}
+
+/*
+ * 更新提示条。
+ *
+ * 固定吸顶而不是插进文档流：插进流里会让下面的内容跳一下，
+ * 用户正在点的按钮可能正好被推开。
+ */
+.pwa-update-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    padding-top: calc(0.6rem + env(safe-area-inset-top));
+    background: #4f320c;
+    color: #FBDAB5;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.pwa-update-banner button {
+    /* 手机上按钮的点击目标要够大，不然容易点偏。 */
+    min-height: 2.25rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid #FBDAB5;
+    border-radius: 0.35rem;
+    background: #CE760C;
+    color: #FFFFFF;
+    font: inherit;
+    cursor: pointer;
+}
+
+.pwa-update-banner button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* 「稍后」是次要动作，做成描边按钮，免得和「立即更新」抢注意力。 */
+.pwa-update-banner .pwa-update-dismiss {
+    background: transparent;
+    color: #FBDAB5;
+}
+
+.pwa-update-banner button:focus-visible {
+    outline: 2px solid #FBDAB5;
+    outline-offset: 2px;
+}
+
+/*
+ * 离线标记。目前只用于把"断网了"这件事显式化：
+ * 应用本来就离线可用，不提示的话用户分不清"没网"和"数据没加载"。
+ */
+html.pwa-offline body::after {
+    content: "当前处于离线状态，数据仍然可以查看和修改。";
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9;
+    padding: 0.4rem 1rem;
+    padding-bottom: calc(0.4rem + env(safe-area-inset-bottom));
+    background: #6b6b33;
+    color: #FFFFFF;
+    font-size: 0.85rem;
+    text-align: center;
+}
