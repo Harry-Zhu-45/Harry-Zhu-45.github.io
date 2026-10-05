@@ -1,5 +1,7 @@
 // @ts-check
 
+import { globSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import sitemap from '@astrojs/sitemap';
 import svelte from '@astrojs/svelte';
 import tailwind from '@astrojs/tailwind';
@@ -17,6 +19,7 @@ import remarkDirective from 'remark-directive';
 import remarkGithubAdmonitionsToDirectives from 'remark-github-admonitions-to-directives';
 import remarkMath from 'remark-math';
 import remarkSectionize from 'remark-sectionize';
+import { parse } from 'yaml';
 import { expressiveCodeConfig } from './src/config.ts';
 import { pluginLanguageBadge } from './src/plugins/expressive-code/language-badge.ts';
 import { pluginCustomCopyButton } from './src/plugins/expressive-code/custom-copy-button.js';
@@ -26,8 +29,19 @@ import { parseDirectiveNode } from './src/plugins/remark-directive-rehype.js';
 import { remarkExcerpt } from './src/plugins/remark-excerpt.js';
 import { remarkReadingTime } from './src/plugins/remark-reading-time.mjs';
 
+const site = 'https://harry-zhu-45.github.io';
+const articleLastmod = new Map();
+for (const file of globSync(join(import.meta.dirname, 'src/content/blog/**/*.md'))) {
+	const frontmatter = readFileSync(file, 'utf8').match(/^---\r?\n([\s\S]*?)\r?\n---/);
+	if (!frontmatter) continue;
+	const { slug, pubDate, updatedDate, draft } = parse(frontmatter[1]);
+	if (!slug || slug.startsWith('_') || draft) continue;
+	const articlePath = `/${pubDate.slice(0, 10).replaceAll('-', '/')}/${slug}/`;
+	articleLastmod.set(new URL(articlePath, site).pathname, new Date(updatedDate ?? pubDate).toISOString());
+}
+
 export default defineConfig({
-	site: 'https://Harry-Zhu-45.github.io',
+	site,
 	base: '/',
 	trailingSlash: 'always',
 	build: { format: 'directory' },
@@ -91,7 +105,13 @@ export default defineConfig({
 			frames: { showCopyToClipboardButton: false },
 		}),
 		svelte(),
-		sitemap(),
+		sitemap({
+			serialize(item) {
+				const lastmod = articleLastmod.get(new URL(item.url).pathname);
+				if (lastmod) item.lastmod = lastmod;
+				return item;
+			},
+		}),
 	],
 	markdown: {
 		remarkPlugins: [

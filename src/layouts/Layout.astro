@@ -69,7 +69,8 @@ if (!lang) {
 	lang = `${siteConfig.lang}`;
 }
 const siteLang = lang.replace("_", "-");
-const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://Harry-Zhu-45.github.io").toString();
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "https://harry-zhu-45.github.io").toString();
+const socialImageUrl = new URL(url("/img/head.png"), Astro.site ?? "https://harry-zhu-45.github.io").toString();
 
 const bannerOffsetByPosition = {
 	top: `${BANNER_HEIGHT_EXTEND}vh`,
@@ -97,16 +98,18 @@ const bannerOffset =
 		<meta property="og:url" content={canonicalUrl}>
 		<meta property="og:title" content={pageTitle}>
 		<meta property="og:description" content={description || pageTitle}>
+		<meta property="og:image" content={socialImageUrl}>
 		{setOGTypeArticle ? (
         <meta property="og:type" content="article" />
         ) : (
         <meta property="og:type" content="website" />
         )}
 
-		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:card" content="summary">
 		<meta property="twitter:url" content={canonicalUrl}>
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || pageTitle}>
+		<meta name="twitter:image" content={socialImageUrl}>
 
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />

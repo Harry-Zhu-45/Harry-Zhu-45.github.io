@@ -86,6 +86,7 @@ const mainPanelTop = siteConfig.banner.enable
                 <div id="content-wrapper" class="onload-animation">
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
+                    {!setOGTypeArticle && <h1 class="card-base p-4 mb-4 text-2xl font-bold text-90">{title || siteConfig.title}</h1>}
                     <slot></slot>
                     <div class="footer col-span-2 onload-animation hidden lg:block">
                         <Footer></Footer>
