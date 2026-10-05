@@ -54,6 +54,8 @@ export type NavBarLink = {
 	name: string;
 	url: string;
 	external?: boolean;
+	/** 强制整页跳转（渲染 data-no-swup），用于 public/ 下的独立静态子应用 */
+	noSwup?: boolean;
 };
 
 export type NavBarConfig = {

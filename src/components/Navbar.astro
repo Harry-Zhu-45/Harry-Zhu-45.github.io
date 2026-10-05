@@ -34,6 +34,7 @@ let links: NavBarLink[] = navBarConfig.links.map(
         <div class="hidden md:flex">
             {links.map((l) => {
                 return <a aria-label={l.name} href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
+                          data-no-swup={l.noSwup ? '' : undefined}
                           class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
                 >
                     <div class="flex items-center">
