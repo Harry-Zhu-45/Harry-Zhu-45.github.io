@@ -8,8 +8,7 @@
 //   - 正文逐字节原样拷贝，不改写
 //   - date → pubDate、updated → updatedDate，补 +08:00 时区
 //   - categories（字符串）→ 数组；tags（字符串或列表）→ 数组
-//   - slug 不需要生成：Astro glob loader 的 post.id = 相对路径去扩展名，
-//     与 Hexo :title 语义一致，保持目录结构即 URL 对齐
+//   - slug = 相对 _posts 的路径去扩展名；写入 frontmatter，保持旧 URL
 
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
 import { join, dirname, relative, resolve } from 'node:path';
