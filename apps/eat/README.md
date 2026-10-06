@@ -8,4 +8,4 @@
 
 运行 `npm --prefix apps/eat test` 验证生成器、Unicode casefold、UI、数据库和离线缓存。测试产物位于 `apps/eat/dist/pwa/`，不提交。
 
-数据保存在每个浏览器自己的 IndexedDB 中。旧桌面 SQLite 数据需通过 schemaVersion=2 JSON 在目标网站手动导入。迁移恢复备份在博客根目录 `.local-backups/eat-20261006/`，该目录已被 Git 忽略，不属于网站发布内容；建议另存一份到备份盘。
+数据保存在每个浏览器自己的 IndexedDB 中。旧桌面 SQLite 数据需通过 schemaVersion=2 JSON 在目标网站手动导入。旧数据快照、可导入 JSON 和历史数据备份在博客根目录 `.local-backups/eat-20261006/`，该目录已被 Git 忽略，不属于网站发布内容；建议另存一份到备份盘。今后仅维护网页版，旧项目源码归档（含 Python 服务、Android 工程及旧 Git 历史）已删除。
