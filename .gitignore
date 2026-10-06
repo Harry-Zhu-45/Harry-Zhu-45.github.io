@@ -29,3 +29,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# private migration backups and Python caches
+.local-backups/
+__pycache__/

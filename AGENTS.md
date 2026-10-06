@@ -2,6 +2,8 @@
 
 ## Development
 
+Paths and commands in this file are relative to the repository root.
+
 Install dependencies and start the dev server:
 
 ```bash
@@ -74,10 +76,12 @@ excluded automatically. A new page that should be searchable needs the attribute
 
 - **Never hand-edit it.** Regenerate with `npm run sync:eat`
   (`node scripts/sync-eat.mjs`, options `--source`, `--output`, `--check`).
-- The script reads the source project (default `/home/mzhu/Desktop/what-should-we-eat`, override
-  with `--source` or `EAT_SOURCE`), calls its own `tools/prepare_pwa.py`, verifies the 18-file
-  whitelist, and swaps the result in atomically. The source project is read-only.
-- The output is committed, so the GitHub Pages build never needs the source project. Its paths and
+- The script reads `apps/eat/` and runs `apps/eat/tools/prepare_pwa.py` using Python 3,
+  verifies the 18-file whitelist, and swaps the result in atomically. Source files are read-only
+  during generation. `--source` or `EAT_SOURCE` can override the source path for explicit checks.
+- `--check` validates a temporary build and cleans it up; it does not compare against `public/eat/`.
+- Source maintenance instructions: `apps/eat/AGENTS.md`.
+- The output is committed; the GitHub Pages build copies `public/eat/` without regenerating it. Its paths and
   service-worker scope are all relative, which is what makes the `/eat/` subpath work without edits.
 - The nav entry for it uses `noSwup: true`; see the Swup section above.
 

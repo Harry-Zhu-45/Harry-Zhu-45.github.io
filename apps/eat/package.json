@@ -1,0 +1,8 @@
+{
+  "name": "eat-web",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "python3 tools/prepare_pwa.py && python3 -m unittest discover -s tests -p \"test_*.py\" && python3 tests/test_generate_casefold.py && python3 tests/test_casefold_parity.py && node tests/test_search.js && node tests/test_render.js && node tests/test_validation.js && node tests/test_store.js && node tests/test_database.js && node tests/test_pwa_integration.js && node tests/test_service_worker.js"
+  }
+}

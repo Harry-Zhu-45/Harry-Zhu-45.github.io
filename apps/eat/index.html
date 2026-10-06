@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>今天吃什么？</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="从食物候选列表中随机选择，帮你决定今天吃什么。">
+        <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    </head>
+    <body>
+        <header>
+            <!-- 头图里本来就写着「吃什么」「是啊，吃什么」，所以这里不再叠任何文字：
+                 原来的两段装饰文字用的是和图上文字相近的浅色，叠上去只会互相压住。
+                 页面标题留一个屏幕阅读器可见的 h1。 -->
+            <h1 class="visually-hidden">今天吃什么</h1>
+        </header>
+        <nav class="main-nav" aria-label="主导航">
+            <button class="nav-button active" data-view="home-view" type="button">随机选择</button>
+            <button class="nav-button" data-view="choices-view" type="button">可选项</button>
+            <button class="nav-button" data-view="history-view" type="button">历史与统计</button>
+        </nav>
+        <main>
+            <div class="status-bar">
+                <div id="app-status" class="app-status" role="status" aria-live="polite"></div>
+                <button id="retry-load-btn" class="retry-button" type="button" hidden>重新加载</button>
+            </div>
+            <section id="home-view" class="app-view active-view">
+                <div class="home-choice-layout">
+                    <div class="random-choice-panel">
+                        <div id="form-error" class="form-error" role="alert" aria-live="polite"></div>
+                        <button id="random-choice-btn" type="button">随机选择</button>
+                        <div class="food-chooser" role="status" aria-live="polite">建议吃：<span id="food-choice"></span></div>
+                        <div id="selection-actions" class="selection-actions" hidden>
+                            <span>确认将此结果加入历史记录？</span>
+                            <button id="confirm-choice-btn" type="button">确认</button>
+                            <button id="cancel-choice-btn" type="button">取消</button>
+                        </div>
+                    </div>
+                    <div class="search-choice-panel">
+                        <h2>按名字查找</h2>
+                        <label for="food-search-input">输入食物名称或关键词：</label>
+                        <input id="food-search-input" class="food-search-input" type="search" maxlength="40" placeholder="例如：面、rice">
+                        <p class="search-note">支持关键词、空格归一化和常见中英文别名；名字、别名、标签都会参与匹配，点击结果后确认加入历史记录。别名和标签在「可选项」页面维护。</p>
+                        <ul id="food-search-results" class="search-results"></ul>
+                    </div>
+                </div>
+                <div class="intro">
+                    <hr class="hori">
+                    <p>这个小工具可以帮你更轻松地决定吃什么，尤其适合面对很多选择的时候。</p>
+                    <b>使用方法：</b>
+                    <ul>
+                        <li>前往“可选项”页面管理食物</li>
+                        <li>点击“随机选择”抽取结果，或在右侧按名称搜索</li>
+                        <li>点击搜索结果并确认后加入历史记录</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="choices-view" class="app-view" hidden>
+                <h2>管理可选项</h2>
+                <div id="choice-form-error" class="form-error" role="alert"></div>
+                <label for="user-food-choice">输入食物选项：</label>
+                <div class="choice-input">
+                    <input type="text" id="user-food-choice" maxlength="40">
+                    <button id="add-food-choice-btn" type="button">添加</button>
+                </div>
+                <label for="choice-filter-input">筛选候选项：</label>
+                <div class="choice-input">
+                    <input type="text" id="choice-filter-input" maxlength="40"
+                        placeholder="输入名字、别名或标签，如 KFC">
+                </div>
+                <p id="choice-filter-note" class="choice-filter-note" role="status" aria-live="polite"></p>
+                <ul id="display-food-choice" class="foodlist"></ul>
+            </section>
+
+            <section id="history-view" class="app-view" hidden>
+                <div class="history-panel">
+                    <div class="history-header">
+                        <h2>历史记录</h2>
+                        <button id="clear-history-btn" type="button">清空记录</button>
+                    </div>
+                    <p class="view-note">最近五天（含今天）的记录可以编辑或删除，食物和时间都能改；更早的记录仅供查看。</p>
+                    <ul id="food-history" class="history-list"></ul>
+                </div>
+                <div class="statistics-panel">
+                    <h2>统计</h2>
+                    <div class="statistics-cards">
+                        <div><strong id="total-count">0</strong><span>确认次数</span></div>
+                        <div><strong id="unique-count">0</strong><span>食物种类</span></div>
+                    </div>
+                    <h3>食物选择排行</h3>
+                    <div id="ranking-filters" class="ranking-filters" role="group" aria-label="排行显示范围">
+                        <button class="ranking-filter active" type="button" data-limit="10" aria-pressed="true">前 10</button>
+                        <button class="ranking-filter" type="button" data-limit="20" aria-pressed="false">前 20</button>
+                        <button class="ranking-filter" type="button" data-limit="0" aria-pressed="false">全部</button>
+                    </div>
+                    <ol id="food-ranking" class="ranking-list"></ol>
+                    <p id="ranking-note" class="ranking-note"></p>
+                    <h3>近 7 / 30 天趋势</h3>
+                    <div id="trend-summary" class="trend-summary"></div>
+                </div>
+                <div class="backup-panel">
+                    <h2>数据备份</h2>
+                    <p class="view-note">数据保存在本机 SQLite 数据库中，可导出 JSON 文件进行备份或迁移。</p>
+                    <div class="backup-actions">
+                        <button id="export-data-btn" type="button">导出 JSON</button>
+                        <input id="import-file-input" class="visually-hidden" type="file" accept="application/json,.json">
+                        <label class="file-button" for="import-file-input">选择备份文件</label>
+                    </div>
+                    <div id="import-preview" class="import-preview" role="status" aria-live="polite" hidden>
+                        <strong>导入预览</strong>
+                        <p id="import-summary"></p>
+                        <div class="backup-actions">
+                            <button id="merge-import-btn" type="button">合并导入</button>
+                            <button id="replace-import-btn" type="button">覆盖导入</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <script src="search.js"></script>
+        <script src="api.js"></script>
+        <script src="index.js"></script>
+    </body>
+</html>

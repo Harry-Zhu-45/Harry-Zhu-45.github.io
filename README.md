@@ -1,6 +1,6 @@
 # HarryZ's Blog
 
-基于 Astro 和 Fuwari 的个人博客，部署在 GitHub Pages。文章位于 `src/content/blog/`。
+基于 Astro 和 Fuwari 的个人博客，部署在 GitHub Pages。文章位于 `src/content/blog/`。本文的路径和命令均以仓库根目录（当前 `pwd`）为基准。
 
 ## 开发
 
@@ -53,8 +53,10 @@ comm -23 urls-baseline.txt /tmp/new.txt
 
 最后一条命令应无输出。新增页面可以超出基线。静态 URL 依赖 `build.format: 'directory'` 和 `trailingSlash: 'always'`。
 
-## 部署与迁移
+## 部署
 
 推送 `main` 后，GitHub Actions 部署到 GitHub Pages；Pages 来源需设为 **GitHub Actions**。Fuwari 源码和 MIT 许可保留在 `LICENSE-Fuwari`。
 
-`node scripts/migrate.mjs --force` 从相邻的 Hexo 仓库 `../blog/source/_posts/` 迁移 19 篇文章，复制正文并生成带时区的日期、分类、标签和显式 slug。
+## 今天吃什么
+
+网页版源码位于 `apps/eat/`，发布产物位于 `public/eat/`。生成和测试需要 Python 3。修改后运行 `npm --prefix apps/eat test` 和 `npm run sync:eat`，再构建博客。详见 [源码维护说明](apps/eat/README.md)。
