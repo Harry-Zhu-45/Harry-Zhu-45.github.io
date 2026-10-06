@@ -26,6 +26,8 @@ export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
+		{ name: '标签', url: '/tags/' },
+		{ name: '分类', url: '/categories/' },
 		{ name: '友链', url: '/link/' },
 		{ name: '今天吃什么', url: '/eat/', noSwup: true },
 		{ name: 'GitHub', url: 'https://github.com/Harry-Zhu-45', external: true },
