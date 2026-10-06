@@ -157,16 +157,16 @@ function namesOf(choices) {
  * ------------------------------------------------------------------ */
 
 async function main() {
-    await test("1. 首次 initialize 种下 8 个默认候选项，重复调用不会翻倍", async () => {
+    await test("1. 首次 initialize 种下默认候选项，重复调用不会翻倍", async () => {
         const { db } = freshDatabase("init");
         const first = await db.initialize();
         assert.strictEqual(
             first.seeded,
-            8,
-            "首次启动必须种下 8 个默认候选项（DEFAULT_CHOICES），"
+            AppValidation.DEFAULT_CHOICES.length,
+            "首次启动必须种下默认候选项（DEFAULT_CHOICES），"
                 + "否则用户打开应用看到一个空的候选项列表，会以为数据丢了"
         );
-        assert.strictEqual(first.state.choices.length, 8, "initialize 的返回里就应该带着种好的候选项");
+        assert.strictEqual(first.state.choices.length, AppValidation.DEFAULT_CHOICES.length, "initialize 的返回里就应该带着种好的候选项");
         assert.deepStrictEqual(
             namesOf(first.state.choices),
             AppValidation.DEFAULT_CHOICES.slice(),
@@ -182,8 +182,8 @@ async function main() {
         );
         assert.strictEqual(
             (await db.getState()).choices.length,
-            8,
-            "重复 initialize 之后库里的候选项仍然是 8 个（判据是 metadata.initialized 标记）"
+            AppValidation.DEFAULT_CHOICES.length,
+            "重复 initialize 之后库里的候选项仍然是默认数量（判据是 metadata.initialized 标记）"
         );
     });
 
@@ -301,7 +301,7 @@ async function main() {
         const snapshotsBefore = (await db.listSnapshots()).length;
 
         const conflict = await rejects(
-            db.addChoice("Yam and egg"),
+            db.addChoice(AppValidation.DEFAULT_CHOICES[0]),
             "重复的候选项必须被拒绝，否则列表里会出现两条一模一样的食物"
         );
         assert.ok(
@@ -349,6 +349,7 @@ async function main() {
     await test("5. 去重走 casefold：大小写不同、ß/ss 都算重复", async () => {
         const { db } = freshDatabase("casefold");
         await db.initialize();
+        await db.addChoice("Yam and egg");
         const baseline = (await db.getState()).choices.length;
 
         const upper = await rejects(

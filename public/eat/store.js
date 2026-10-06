@@ -641,17 +641,7 @@
         if (state.meta.initialized) {
             return { seeded: 0 };
         }
-        var seeded = 0;
-        AppValidation.DEFAULT_CHOICES.forEach(function(name) {
-            try {
-                addChoice(state, name);
-                seeded += 1;
-            } catch (error) {
-                if (!(error instanceof AppValidation.ConflictError)) {
-                    throw error;
-                }
-            }
-        });
+        var seeded = importChoices(state, AppValidation.DEFAULT_CHOICE_DATA).insertedChoices;
         state.meta.initialized = true;
         return { seeded: seeded };
     }

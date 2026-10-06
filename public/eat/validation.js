@@ -42,19 +42,53 @@
     var HISTORY_EDIT_WINDOW_DAYS = 5;
     var SNAPSHOT_LIMIT = 10;
 
-    // 首次启动的默认候选项，与 database.py 的 DEFAULT_CHOICES 一致。
-    // DEFAULT_CHOICE_ALIASES 不搬过来：它是 v1→v2 结构迁移时补一次的出厂别名，
-    // PWA 的库从版本 1 开始，没有那一步迁移可做。
-    var DEFAULT_CHOICES = [
-        "Yam and egg",
-        "Jollof rice",
-        "Bread and egg",
-        "Cereal",
-        "Indomie",
-        "Beans",
-        "Efo riro",
-        "Ofada rice and stew"
+    // 首次启动可选项，提取自 2026-10-06 的网页版导出；不包含历史记录。
+    var DEFAULT_CHOICE_DATA = [
+        {"name": "肯德基", "aliases": ["KFC"], "tags": ["梅园", "珞珈门"]},
+        {"name": "旺鸭旺烧腊饭", "aliases": [], "tags": ["南二门"]},
+        {"name": "麦当劳", "aliases": ["McDonalds", "金拱门"], "tags": ["珞珈门"]},
+        {"name": "80卤味", "aliases": ["巴黎卤味"], "tags": ["工学部菜市场"]},
+        {"name": "原汤牛肉粉", "aliases": [], "tags": ["广八路"]},
+        {"name": "工学部羊肉粉", "aliases": [], "tags": ["工学部"]},
+        {"name": "怪味面", "aliases": [], "tags": ["广八路"]},
+        {"name": "潮汕牛肉粿条", "aliases": [], "tags": ["广八路", "珞珈门"]},
+        {"name": "花头馄饨", "aliases": [], "tags": ["广八路"]},
+        {"name": "长沙小家常", "aliases": [], "tags": ["广八路"]},
+        {"name": "沙县小吃", "aliases": [], "tags": ["田园", "信部", "广八路"]},
+        {"name": "中百罗森", "aliases": ["Lawson"], "tags": ["梅园", "便利店"]},
+        {"name": "重庆小面", "aliases": [], "tags": ["工学部", "星湖园"]},
+        {"name": "山西刀削面", "aliases": [], "tags": ["珞珈门"]},
+        {"name": "喜家德水饺", "aliases": [], "tags": ["银泰"]},
+        {"name": "胖哥饺子馆", "aliases": [], "tags": ["东湖新村"]},
+        {"name": "碳锅鱼", "aliases": [], "tags": ["东湖新村"]},
+        {"name": "鸡公煲", "aliases": [], "tags": ["广八路"]},
+        {"name": "胖姨妈螺蛳粉", "aliases": [], "tags": []},
+        {"name": "长白山", "aliases": [], "tags": []},
+        {"name": "袁记云饺", "aliases": [], "tags": []},
+        {"name": "氧气层", "aliases": [], "tags": ["梅园"]},
+        {"name": "饱嗝食集", "aliases": ["饱立来"], "tags": ["梅园"]},
+        {"name": "周麻婆", "aliases": [], "tags": ["梅园"]},
+        {"name": "小肆川", "aliases": [], "tags": []},
+        {"name": "大志小厨", "aliases": [], "tags": []},
+        {"name": "顶屋咖喱", "aliases": [], "tags": ["东湖新村"]},
+        {"name": "周闪闪川菜馆", "aliases": [], "tags": []},
+        {"name": "汤师傅东北菜", "aliases": [], "tags": ["珞珈门"]},
+        {"name": "红牛餐厅", "aliases": [], "tags": ["广八路"]},
+        {"name": "兴兴餐馆", "aliases": [], "tags": ["广八路"]},
+        {"name": "舌尖大师", "aliases": [], "tags": ["广八路"]},
+        {"name": "香茵波克", "aliases": ["梅园"], "tags": []},
+        {"name": "杨姐烤肉拌饭", "aliases": [], "tags": []},
+        {"name": "营养液", "aliases": [], "tags": ["代餐"]},
+        {"name": "铁板炒饭", "aliases": [], "tags": []},
+        {"name": "手擀面", "aliases": [], "tags": ["珞珈门"]},
+        {"name": "老乡鸡", "aliases": [], "tags": ["珈园"]},
+        {"name": "711", "aliases": [], "tags": ["便利店", "梅园"]},
+        {"name": "赤牧", "aliases": [], "tags": ["自助餐"]},
+        {"name": "西厢饺子馆", "aliases": [], "tags": ["田园"]},
+        {"name": "肉包蛋", "aliases": [], "tags": ["代餐"]},
+        {"name": "川味坊", "aliases": [], "tags": ["工学部"]}
     ];
+    var DEFAULT_CHOICES = DEFAULT_CHOICE_DATA.map(function(choice) { return choice.name; });
 
     function ValidationError(message) {
         var error = Error.call(this, message);
@@ -689,6 +723,7 @@
         HISTORY_EDIT_WINDOW_DAYS: HISTORY_EDIT_WINDOW_DAYS,
         SNAPSHOT_LIMIT: SNAPSHOT_LIMIT,
         DEFAULT_CHOICES: DEFAULT_CHOICES,
+        DEFAULT_CHOICE_DATA: DEFAULT_CHOICE_DATA,
         ValidationError: ValidationError,
         ConflictError: ConflictError,
         NotFoundError: NotFoundError,

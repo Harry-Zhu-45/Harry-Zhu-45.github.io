@@ -24,6 +24,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const DEFAULT_COUNT = require("../pwa/validation.js").DEFAULT_CHOICES.length;
 
 const PROJECT_ROOT = path.join(__dirname, "..");
 const DIST = path.join(PROJECT_ROOT, "dist", "pwa");
@@ -252,8 +253,8 @@ async function checkFirstRunRenders() {
 
     const cards = page.dom.element("display-food-choice");
     assert.strictEqual(
-        cards.children.length, 8,
-        "首次启动要播种并渲染 8 个默认候选项，实际渲染了 " + cards.children.length + " 个"
+        cards.children.length, DEFAULT_COUNT,
+        "首次启动要播种并渲染默认候选项，实际渲染了 " + cards.children.length + " 个"
     );
     // 真的进了渲染流程，而不是停在空壳上。
     assert.ok(
@@ -273,16 +274,16 @@ async function checkBusinessFlow() {
     const api = page.sandbox.AppApi;
 
     const initial = await api.initialize();
-    assert.strictEqual(initial.choices.length, 8, "初始化要有 8 个默认候选项");
+    assert.strictEqual(initial.choices.length, DEFAULT_COUNT, "初始化要有默认候选项");
     assert.ok(
         initial.migrationWarning === null || initial.migrationWarning === undefined,
         "PWA 版不做浏览器 v1 迁移，不该有迁移警告"
     );
 
     // 返回形状逐个对：index.js 直接读这些字段。
-    const added = await api.addChoice("  肯德基  ");
+    const added = await api.addChoice("  测试餐厅  ");
     assert.ok(added && added.choice, "addChoice 要返回 {choice}");
-    assert.strictEqual(added.choice.name, "肯德基", "名字要规范化");
+    assert.strictEqual(added.choice.name, "测试餐厅", "名字要规范化");
     const choiceId = added.choice.id;
 
     const alias = await api.addChoiceAlias(choiceId, "KFC");
@@ -301,7 +302,7 @@ async function checkBusinessFlow() {
         "addChoiceTag 要返回 {tag: {id, tag}}"
     );
 
-    const history = await api.addHistory("肯德基");
+    const history = await api.addHistory("测试餐厅");
     assert.ok(history && history.record, "addHistory 要返回 {record}");
     ["id", "food", "selectedAt", "editable", "deletable"].forEach(function(field) {
         assert.ok(
@@ -312,7 +313,7 @@ async function checkBusinessFlow() {
     assert.strictEqual(history.record.editable, true);
 
     const state = await api.getState();
-    assert.strictEqual(state.choices.length, 9, "getState 要能看到刚加的候选项");
+    assert.strictEqual(state.choices.length, DEFAULT_COUNT + 1, "getState 要能看到刚加的候选项");
     const found = state.choices.find(function(choice) { return choice.id === choiceId; });
     assert.deepStrictEqual(plain(found.aliases), [{ id: alias.alias.id, alias: "KFC" }]);
     assert.deepStrictEqual(plain(found.tags), [{ id: tag.tag.id, tag: "快餐" }]);
@@ -332,10 +333,10 @@ async function checkBusinessFlow() {
         { deleted: true });
 
     // 删候选项不能动历史：吃过什么是发生过的事。
-    await api.addHistory("肯德基");
+    await api.addHistory("测试餐厅");
     await api.deleteChoice(choiceId);
     const afterDelete = await api.getState();
-    assert.strictEqual(afterDelete.choices.length, 8);
+    assert.strictEqual(afterDelete.choices.length, DEFAULT_COUNT);
     assert.strictEqual(
         afterDelete.history.length, 1,
         "删候选项不该连带删历史记录"
@@ -355,7 +356,7 @@ async function checkErrorMessagesSurface() {
 
     let thrown = null;
     try {
-        await api.addChoice("Yam and egg");
+        await api.addChoice(page.sandbox.AppValidation.DEFAULT_CHOICES[0]);
     } catch (error) {
         thrown = error;
     }
@@ -383,10 +384,10 @@ async function checkExportImportRoundTrip() {
     await page.load(order);
     const api = page.sandbox.AppApi;
     await api.initialize();
-    const choice = (await api.addChoice("寿司")).choice;
+    const choice = (await api.addChoice("测试寿司")).choice;
     await api.addChoiceAlias(choice.id, "sushi");
     await api.addChoiceTag(choice.id, "日料");
-    await api.addHistory("寿司");
+    await api.addHistory("测试寿司");
 
     const exported = await api.fetchExport();
     assert.ok(exported.blob, "fetchExport 要返回 blob");
@@ -400,8 +401,8 @@ async function checkExportImportRoundTrip() {
     const payload = JSON.parse(text);
     assert.strictEqual(payload.app, "what-should-we-eat");
     assert.strictEqual(payload.schemaVersion, 2);
-    const sushi = payload.choices.find(function(entry) { return entry.name === "寿司"; });
-    assert.deepStrictEqual(plain(sushi), { name: "寿司", aliases: ["sushi"], tags: ["日料"] });
+    const sushi = payload.choices.find(function(entry) { return entry.name === "测试寿司"; });
+    assert.deepStrictEqual(plain(sushi), { name: "测试寿司", aliases: ["sushi"], tags: ["日料"] });
     assert.deepStrictEqual(
         Object.keys(payload.history[0]).sort(), ["food", "id", "selectedAt"],
         "导出历史只能有 id/food/selectedAt：editable/deletable 是后端算出来的"
@@ -438,7 +439,7 @@ async function checkExportImportRoundTrip() {
     // 幂等：同一份备份再导一次，候选项和别名都不翻倍。
     assert.strictEqual(applied.summary.insertedChoiceCount, 0);
     assert.strictEqual(applied.summary.insertedAliasCount, 0);
-    assert.strictEqual(applied.state.choices.length, 9);
+    assert.strictEqual(applied.state.choices.length, DEFAULT_COUNT + 1);
 }
 
 // --------------------------------------------------------------------------
@@ -480,8 +481,8 @@ async function checkPersistenceAcrossReopen() {
 
     const first = createPage({ indexedDB: fake });
     await first.load(order);
-    const choice = (await first.sandbox.AppApi.addChoice("小笼包")).choice;
-    await first.sandbox.AppApi.addHistory("小笼包");
+    const choice = (await first.sandbox.AppApi.addChoice("测试小笼包")).choice;
+    await first.sandbox.AppApi.addHistory("测试小笼包");
     // 模拟关掉页面：连接放掉，但存储（fake）留着。
     first.sandbox.AppDatabase.closeAndReset
         ? first.sandbox.AppDatabase.closeAndReset()
@@ -501,7 +502,7 @@ async function checkPersistenceAcrossReopen() {
     );
     // 关键：不能把"库已经有数据"误判成"首次启动"而重新播种一遍。
     assert.strictEqual(
-        reopened.choices.length, 9,
+        reopened.choices.length, DEFAULT_COUNT + 1,
         "重开页面不该重新播种默认候选项，实际有 " + reopened.choices.length + " 个"
     );
     assert.strictEqual(reopened.history.length, 1, "历史记录也要还在");
@@ -524,7 +525,7 @@ async function checkBootstrapWithoutServiceWorker() {
         "bootstrap.js 不该影响 AppApi 的装载"
     );
     // 页面主体仍然渲染出来了。
-    assert.strictEqual(page.dom.element("display-food-choice").children.length, 8);
+    assert.strictEqual(page.dom.element("display-food-choice").children.length, DEFAULT_COUNT);
 }
 
 // --------------------------------------------------------------------------
@@ -575,7 +576,7 @@ async function checkPersistRejectionDoesNotBreakPage() {
     assert.ok(page.sandbox.AppApi, "persist() 被拒绝后 AppApi 仍应装好");
     assert.strictEqual(
         page.dom.element("display-food-choice").children.length,
-        8,
+        DEFAULT_COUNT,
         "persist() 被拒绝后页面仍应正常渲染"
     );
 }
@@ -591,7 +592,7 @@ async function checkPersistMissingDoesNotBreakPage() {
     assert.ok(page.sandbox.AppApi, "没有 persist() 时 AppApi 仍应装好");
     assert.strictEqual(
         page.dom.element("display-food-choice").children.length,
-        8,
+        DEFAULT_COUNT,
         "没有 persist() 时页面仍应正常渲染（明文 HTTP 下的手机就是这个情形）"
     );
 }
@@ -601,7 +602,7 @@ async function checkPersistFalseDoesNotBreakPage() {
     const page = createPage({ storage: { persist() { return Promise.resolve(false); } } });
     await page.load(order);
     await page.settle(5);
-    assert.strictEqual(page.dom.element("display-food-choice").children.length, 8);
+    assert.strictEqual(page.dom.element("display-food-choice").children.length, DEFAULT_COUNT);
 }
 
 async function checkPersistSynchronousThrowDoesNotBreakPage() {
@@ -609,7 +610,7 @@ async function checkPersistSynchronousThrowDoesNotBreakPage() {
     const page = createPage({ storage: { persist() { throw new Error("unavailable"); } } });
     await page.load(order);
     await page.settle(5);
-    assert.strictEqual(page.dom.element("display-food-choice").children.length, 8);
+    assert.strictEqual(page.dom.element("display-food-choice").children.length, DEFAULT_COUNT);
 }
 
 async function checkPersistSkippedInInsecureContext() {
@@ -623,7 +624,7 @@ async function checkPersistSkippedInInsecureContext() {
     await page.load(order);
     await page.settle(5);
     assert.strictEqual(calls, 0, "非安全 LAN HTTP 上不申请持久化");
-    assert.strictEqual(page.dom.element("display-food-choice").children.length, 8);
+    assert.strictEqual(page.dom.element("display-food-choice").children.length, DEFAULT_COUNT);
 }
 
 // --------------------------------------------------------------------------
@@ -674,7 +675,7 @@ async function main() {
 
     await test("1. 按 index.html 的顺序装载后，各层全局对象接线正确、AppApi 契约完整", checkModuleWiring);
     await test("2. pwa-text.js 覆盖生效：失败文案不含桌面版说法", checkPwaTextOverride);
-    await test("3. 首次启动播种并渲染 8 个默认候选项", checkFirstRunRenders);
+    await test("3. 首次启动播种并渲染默认候选项", checkFirstRunRenders);
     await test("4. 完整业务流（增删改查）走真实 AppApi + IndexedDB", checkBusinessFlow);
     await test("5. 业务错误消息原样透出，不被包装成通用错误", checkErrorMessagesSurface);
     await test("6. 导出 / 预览 / 合并导入闭环，且重复导入幂等", checkExportImportRoundTrip);

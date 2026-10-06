@@ -53,10 +53,15 @@ function throwsWith(kind, message, body) {
     }
 }
 
-// 造一个"已经初始化过、有若干候选项"的状态。
+// 固定业务测试数据，避免业务规则测试依赖产品默认可选项。
+const TEST_CHOICES = [
+    "Yam and egg", "Jollof rice", "Bread and egg", "Cereal",
+    "Indomie", "Beans", "Efo riro", "Ofada rice and stew"
+];
 function seededState() {
     const state = AppStore.createEmptyState();
-    AppStore.initializeIfNeeded(state);
+    TEST_CHOICES.forEach(function(name) { AppStore.addChoice(state, name); });
+    state.meta.initialized = true;
     return state;
 }
 
@@ -71,15 +76,18 @@ function timestampDaysAgo(days) {
 test("initializeIfNeeded 只在第一次播种默认候选项", function() {
     const state = AppStore.createEmptyState();
     const first = AppStore.initializeIfNeeded(state);
-    assert.strictEqual(first.seeded, 8);
-    assert.strictEqual(state.choices.length, 8);
+    assert.strictEqual(first.seeded, AppValidation.DEFAULT_CHOICES.length);
+    assert.strictEqual(state.choices.length, AppValidation.DEFAULT_CHOICES.length);
     // 位置从 0 开始连续，渲染顺序才是稳定的。
     assert.deepStrictEqual(state.choices.map(function(choice) { return choice.position; }),
-        [0, 1, 2, 3, 4, 5, 6, 7]);
+        AppValidation.DEFAULT_CHOICES.map(function(_, index) { return index; }));
+
+    assert.deepStrictEqual(AppStore.buildExport(state).choices, AppValidation.DEFAULT_CHOICE_DATA);
+    assert.deepStrictEqual(state.history, []);
 
     const second = AppStore.initializeIfNeeded(state);
     assert.strictEqual(second.seeded, 0);
-    assert.strictEqual(state.choices.length, 8);
+    assert.strictEqual(state.choices.length, AppValidation.DEFAULT_CHOICES.length);
 });
 
 test("候选项被删光之后不会再重新播种", function() {
@@ -293,7 +301,7 @@ test("id 只能按十进制整数解析，不能像 Number() 那样乱转", func
 test("导入过数据之后不会再播种默认候选项", function() {
     // 对着 database.py 的 apply_import：它会把 browser_v1_migrated 置成 true，
     // 之后 migrate_browser_data 不再播种。不置位的话，"先导入、再 initialize"
-    // 会把 8 个默认候选项追加到用户刚导入的数据后面。
+    // 会把默认候选项追加到用户刚导入的数据后面。
     const state = AppStore.createEmptyState();
     assert.strictEqual(state.meta.initialized, false);
     AppStore.applyImport(state, {
@@ -602,7 +610,7 @@ test("toApiState 的候选项按 position 排序", function() {
     // 打乱内部顺序：渲染顺序必须由 position 决定，而不是数组下标。
     state.choices.reverse();
     const names = AppStore.toApiState(state).choices.map(function(choice) { return choice.name; });
-    assert.deepStrictEqual(names, AppValidation.DEFAULT_CHOICES);
+    assert.deepStrictEqual(names, TEST_CHOICES);
 });
 
 // --------------------------------------------------------------------------
