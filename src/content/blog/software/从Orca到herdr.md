@@ -1,7 +1,7 @@
 ---
-"title": "我原本只想搞懂 worktree，结果拆出了一套 Orca 多 Agent 并行栈"
-"slug": "software/Orca多Agent编排"
-"description": "从「Git worktree 到底是什么」出发，一路查到 SSH 上的多 Agent 并行架构，最后把「并行」拆成七层。"
+"title": "从 Orca 到 herdr：worktree 与七层并行"
+"slug": "software/从Orca到herdr"
+"description": "从「Git worktree 到底是什么」出发，一路查到 SSH 上的多 Agent 并行架构，把「并行」拆成七层，最后换掉了 Orca。"
 "pubDate": "2026-10-02T22:00:00+08:00"
 "categories": []
 "tags":
@@ -10,7 +10,7 @@
   - "Orca"
 ---
 
-> 一篇AI总结的探索笔记。起点是一个很具体的问题：「Orca 里的 Git Worktree 到底是什么意思」；终点是一张从 Git 到进程的七层并行地图。中间绕了两个弯：代码不在本地，以及「能不能同时开两个 Claude」。
+> 一篇AI总结的探索笔记。起点是一个很具体的问题：「Orca 里的 Git Worktree 到底是什么意思」。中间绕了两个弯：代码不在本地，以及「能不能同时开两个 Claude」。终点是一张从 Git 到进程的七层并行地图，和一次从 Orca 到 herdr 的更换。
 
 ## 起因：一个仓库，四个实验，两个 Claude
 
@@ -324,6 +324,12 @@ Level 6   OS Process              Python / pytest 进程
 - **额度是共享的。** 多个 Claude session 并行很好看，但 rate limit 是同一个账号的。多账号 hot-swap 能缓解，不能消除。
 - **worktree 的数量不是免费的。** 每个都是完整 checkout，仓库一大、依赖一多，磁盘和 `uv`/`micromamba` 环境的复用策略需要专门设计，`sharedDirectories` 能覆盖一部分，但不是全部。
 - **`.worktreeinclude` 该包含什么**，其实取决于哪些文件是「环境」、哪些是「状态」。这条线我还没划清楚。
+
+## 后来：换成了 herdr
+
+Orca 我用了一段时间就卸了，劝退我的就是上面那条服务器端的安装成本。我的代码在课题组的服务器上，要让它的 worktree 跑起来，得先把各种 agent CLI 和运行环境装齐。
+
+现在用的是 [herdr](https://herdr.dev)，一个终端里的 workspace 管理器，自己也带 worktree 管理。我平时本来就待在终端里，装完不用再单开一个 GUI。
 
 ## 参考资料
 
