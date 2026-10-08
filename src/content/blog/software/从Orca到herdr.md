@@ -281,7 +281,7 @@ Level 6   OS Process              Python / pytest 进程
 ```
 
 | 层级 | 典型对象 | 独立上下文 | 文件隔离 | 谁协调 | 适合什么 |
-|  |  | : | : |  |  |
+| --- | --- | :-: | :-: | --- | --- |
 | **Worktree** | `method-A`, `method-B` | ✅ | **✅ 强** | 你 / Orca | 不同方案、不同 branch |
 | **Agent Session** | Claude #1 / Claude #2 | **✅ 强** | ❌ 同 WT 时共享文件 | 你 | 独立长任务 |
 | **Agent Team** | lead + teammates | ✅ 每个 teammate | 通常 ❌ | **Lead Claude** | 多角色协作 |
