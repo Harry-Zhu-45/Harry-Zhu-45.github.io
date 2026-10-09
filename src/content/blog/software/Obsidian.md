@@ -2,7 +2,7 @@
 "title": "Obsidian"
 "slug": "software/Obsidian"
 "pubDate": "2022-04-27T22:15:00+08:00"
-"updatedDate": "2026-03-08T15:56:00+08:00"
+"updatedDate": "2026-10-09T01:44:00+08:00"
 "categories": []
 "tags":
   - "软件"
@@ -24,37 +24,43 @@
 
 > 不要老是想着 all in Obsidian
 
+在用的：
+
 - Excalidraw
   - 可以画图，经常更新
-- Mind Map
-  - 可以生成思维导图，便于查看大纲
-- Pandoc Plugin
-  - 调用了 Pandoc，用来生成 PPT 等格式的文件
-- Note Refactor
-  - 将大文档根据标题切分成小文档，并在大小文档之间建立链接
-- dataview
-  - 把 Obsidian 变成数据库使用
+- Media Extended
+  - 在 Obsidian 里直接播放视频和音频
+- Media Extended BiliBili Plugin
+  - 给 Media Extended 补上 B 站支持
+- Markdown prettifier
+  - 整理和重排格式乱的 Markdown
+- Shortcuts extender
+  - 加一批编辑命令，格式化、插特殊符号时不用切输入法
+- Workspaces Plus
+  - 保存和切换工作区
 - Footnote shortcut
   - 可以使用快捷键在文段中加入角标注释
 - Tiny Footnotes
   - 可以将文段中乱序的角标重新排序
 - Advanced URI
   - 用 uid 代替文件路径生成稳定的外链
+
+装了但没开：
+
+- Mind Map
+  - 把笔记预览成 Markmap 思维导图
 - Citations
-  - 通过 BibLaTeX 的 bib 文件生成引文
+  - 从 Zotero 库里检索并插入引文
+- QuickAdd
+  - 快速往 vault 里加页面或内容
 
 ## 其他
 
 - [幕布](https://mubu.com/home)
   - 可以 zoom in 某一个条目之内进行编辑
 
-- [workflowy](https://workflowy.com/)
-
 - [Airtable](https://www.airtable.com/)
   - [OB社区插件汇总 每周更新](https://airtable.com/shrdmp10Lxmf5Wmgl/tblJqnWpcKURTjysX)
-
-- [飞书](https://www.feishu.cn/)
-  - 完全支持 Markdown 语法
 
 - [Zotero](https://www.zotero.org/)
   - 文献管理，论文阅读
